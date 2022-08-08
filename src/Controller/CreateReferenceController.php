@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Annotation\SzApiLog;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -9,7 +10,8 @@ use Symfony\Component\Routing\Annotation\Route;
 class CreateReferenceController extends Controller
 {
     /**
-     * @Route("/create/reference", name="create_reference")
+     * @Route("/public-api/create/reference", name="create_reference")
+     * @SzApiLog()
      */
     public function index(): Response
     {
