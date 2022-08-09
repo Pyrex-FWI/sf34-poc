@@ -25,3 +25,4 @@ monolog:
             level: info
             channels: ['szapilog']
             max_files: 10
+
