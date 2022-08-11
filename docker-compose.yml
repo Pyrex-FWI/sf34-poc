@@ -15,7 +15,9 @@ services:
       - part-php-fpm
     expose:
       - "443"
-
+    ports:
+      - "8083:443"
+      - "8002:80"
 
   part-php:
     image: 3snetregistry.azurecr.io/tsme/php7.3:xdebug-v4
@@ -24,9 +26,6 @@ services:
     volumes:
       - ./:/usr/var/www/
       - ./devops/docker/php-fpm/php.ini:/usr/local/etc/php/conf.d/99-php.ini
-    ports:
-      - "8083:443"
-      - "8002:80"
 
 
   part-filebeat:

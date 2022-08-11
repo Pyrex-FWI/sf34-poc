@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class CreateReferenceController extends Controller
 {
     /**
-     * @Route("/public-api/create/reference", name="create_reference")
+     * @Route("/public-api/move-in/create/reference", name="create_reference")
      * @SzApiLog()
      */
     public function index(): Response

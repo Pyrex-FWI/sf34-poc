@@ -20,9 +20,19 @@ monolog:
 
         sz_api_log:
             type: stream
+            #path: "%kernel.logs_dir%/szapilog.log"
+            path: php://stdout
+            level: info
+            channels: ['szapilog']
+            max_files: 10
+
+
+        sz_api_log_stash:
+            type: stream
             path: "%kernel.logs_dir%/szapilog.log"
 #            path: php://stdout
             level: info
             channels: ['szapilog']
             max_files: 10
+            formatter: monolog.formatter.logstash
 
