@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
 
-  part-webserver:
+  httpd:
     image: httpd:2.4-alpine
     working_dir: /usr/var/www/
     hostname: part-webserver
@@ -11,62 +11,56 @@ services:
       - ./devops/docker/apache/vhosts/:/usr/local/apache2/conf/vhosts/
       - ./devops/docker/apache/httpd.conf:/usr/local/apache2/conf/httpd.conf
       - ./devops/docker/traefik/certs/:/usr/local/certs/
-    depends_on:
-      - part-php-fpm
-    expose:
-      - "443"
-    ports:
-      - "8083:443"
-      - "8002:80"
+    depends_on: [php-fpm]
+    ports: ["8083:443", "8002:80"]
 
-  part-php:
+  php-fpm:
     image: 3snetregistry.azurecr.io/tsme/php7.3:xdebug-v4
     working_dir: /usr/var/www
-    hostname: part-php-fpm
     volumes:
-      - ./:/usr/var/www/
       - ./devops/docker/php-fpm/php.ini:/usr/local/etc/php/conf.d/99-php.ini
-
-
-  part-filebeat:
-    image: docker.elastic.co/beats/filebeat:8.3.3
-    working_dir: /usr/var/www
-    volumes:
       - ./:/usr/var/www/
-    ports:
-      - "8083:443"
-      - "8002:80"
-    profiles:
-      - debug
 
-  part-elastic:
+  elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.3.3
-    working_dir: /usr/var/www
+    depends_on: [httpd]
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports: ["9200:9200", "9300:9300"]
+    networks: [log]
+    healthcheck:
+      test: ["curl", "-X", "GET", "localhost:9200/_cluster/health?pretty"]
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
     volumes:
-      - ./:/usr/var/www/
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    profiles:
-      - debug
+      - elasticsearch_conf:/usr/share/elasticsearch/config/
+      - ./devops/docker/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - elasticsearch_data:/usr/share/elasticsearch/data/
+#      - ./devops/docker/elasticsearch/data/:/usr/share/elasticsearch/data/
+    profiles: [log]
 
 
-  part-kibana:
-    image: docker.elastic.co/kibana/kibana:8.3.3
-    working_dir: /usr/var/www
-    volumes:
-      - ./:/usr/var/www/
-    ports:
-      - "5601:5601"
-    profiles:
-      - debug
-
+#  kibana:
+#    image: docker.elastic.co/kibana/kibana:8.3.3
+#    depends_on: [elasticsearch]
+#    ports: ["5601:5601"]
+#    profiles: [log]
+#
+#  filebeat:
+#    image: docker.elastic.co/beats/filebeat:8.3.3
+#    depends_on: [elasticsearch, httpd, php-fpm]
+#    profiles: [log]
 
 volumes:
 ###> doctrine/doctrine-bundle ###
   db-data:
 ###< doctrine/doctrine-bundle ###
+  elasticsearch_conf:
+  elasticsearch_data:
 
 networks:
-  elk: ~
+  log: ~
   backend: ~

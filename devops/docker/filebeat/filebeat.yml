@@ -1,0 +1,27 @@
+filebeat.config:
+  modules:
+    path: ${path.config}/modules.d/*.yml
+    reload.enabled: false
+
+processors:
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+
+output.elasticsearch:
+  hosts: '${ELASTICSEARCH_HOSTS:elasticsearch:9200}'
+  username: '${ELASTICSEARCH_USERNAME:}'
+  password: '${ELASTICSEARCH_PASSWORD:}'
+
+filebeat.inputs:
+  - type: log
+    id: my-filestream-id
+    json.add_error_key: true
+    json.expand_keys: true
+    json.keys_under_root: true
+    json.overwrite_keys: true
+    fields:
+      event.dataset: szlog
+    fields_under_root: true
+    paths:
+      - /usr/var/www/var/log/szapilog.log
+
