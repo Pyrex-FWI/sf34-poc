@@ -6,6 +6,8 @@ services:
     image: httpd:2.4-alpine
     working_dir: /usr/var/www/
     hostname: part-webserver
+    environment:
+      TZ: Europe/Paris
     volumes:
       - ./:/usr/var/www/
       - ./devops/docker/apache/vhosts/:/usr/local/apache2/conf/vhosts/
@@ -17,6 +19,8 @@ services:
   php-fpm:
     image: 3snetregistry.azurecr.io/tsme/php7.3:xdebug-v4
     working_dir: /usr/var/www
+    environment:
+      TZ: Europe/Paris
     volumes:
       - ./devops/docker/php-fpm/php.ini:/usr/local/etc/php/conf.d/99-php.ini
       - ./:/usr/var/www/
@@ -33,8 +37,9 @@ services:
     healthcheck:
       test: ["curl", "-X", "GET", "localhost:9200/_cluster/health?pretty"]
     environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
+      TZ: Europe/Paris
+      discovery.type: single-node
+      xpack.security.enabled: false
     volumes:
       - elasticsearch_conf:/usr/share/elasticsearch/config/
       - ./devops/docker/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
@@ -42,13 +47,24 @@ services:
 #      - ./devops/docker/elasticsearch/data/:/usr/share/elasticsearch/data/
     profiles: [log]
 
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.3.3
+    depends_on: [elasticsearch]
+    environment:
+      elasticsearch_hosts: '["http://elasticsearch:9200"]'
+      TZ: Europe/Paris
+    volumes:
+      - kibana_conf:/usr/share/kibana/config/
+      - kibana_data:/usr/share/kibana/data/
+    ports: ["5601:5601"]
+    networks: [log]
+    profiles: [log]
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "curl", "-s", "-f", "http://localhost:5601/"]
+      retries: 6
 
-#  kibana:
-#    image: docker.elastic.co/kibana/kibana:8.3.3
-#    depends_on: [elasticsearch]
-#    ports: ["5601:5601"]
-#    profiles: [log]
-#
+
 #  filebeat:
 #    image: docker.elastic.co/beats/filebeat:8.3.3
 #    depends_on: [elasticsearch, httpd, php-fpm]
@@ -60,7 +76,8 @@ volumes:
 ###< doctrine/doctrine-bundle ###
   elasticsearch_conf:
   elasticsearch_data:
-
+  kibana_conf:
+  kibana_data:
 networks:
   log: ~
   backend: ~
