@@ -68,6 +68,8 @@ services:
   #Pass: admin/Sigipsr
   uptime-kuma:
     image: louislam/uptime-kuma:1
+    environment:
+      TZ: Europe/Paris
     volumes:
       - uptime_kuma:/app/data
     ports: ["3001:3001"]
