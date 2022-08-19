@@ -64,6 +64,17 @@ services:
       test: ["CMD", "curl", "-s", "-f", "http://localhost:5601/"]
       retries: 6
 
+  #https://github.com/louislam/uptime-kuma
+  #Pass: admin/Sigipsr
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    volumes:
+      - uptime_kuma:/app/data
+    ports: ["3001:3001"]
+    networks:
+      - default
+      - log
+    restart: always
 
 #  filebeat:
 #    image: docker.elastic.co/beats/filebeat:8.3.3
@@ -78,6 +89,7 @@ volumes:
   elasticsearch_data:
   kibana_conf:
   kibana_data:
+  uptime_kuma:
 networks:
   log: ~
   backend: ~
