@@ -12,4 +12,6 @@ logs:
 update-kibana-system-user:
 	${DC} exec -it elastic elasticsearch-reset-password -u kibana_system --force
 
+php:
+	${DC} exec -it php-fpm bash
 reload: down up
